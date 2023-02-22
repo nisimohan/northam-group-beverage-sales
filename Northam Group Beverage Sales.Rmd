@@ -1,0 +1,2112 @@
+---
+title: "**Canadian Beverage Consumption - Exploring, Visualizing and Prediction of Canadian Beverage Sales**"
+subtitle: "**DSCI490 Data Science Project**"
+author: "**Nisi Mohan Kuniyil**"
+date: "**`r Sys.Date()`**"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 6
+header-includes:
+  - \usepackage{titling}
+  - \pretitle{\begin{center}
+  - \includegraphics[width= 9in,height= 9in]{images.jpg}\LARGE\\}
+  - \posttitle{\end{center}}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r,echo=FALSE}
+library(outliers)
+library(dplyr)
+library(ggplot2)
+library(clustMixType)
+library(randomForest)
+```
+
+\newpage
+
+# Executive Summary
+
+## Problem Statement
+
+Alcohol punctuates our lives from the cradle to the grave (Morris, n.d.). Every social event from a small family-friends gathering to fancy cocktail parties, beverages have a vital role in our social life and even a bigger role in our economy.  According to statistics Canada from 2019 to 2020, average alcohol sales in Canada were $813 per person over the legal drinking age. During the period April 2019 to March 2020, the Canadian government earned an average of $425 per person over the legal drinking age from the control and sale of alcoholic beverages (Alcohol Sales in Canada, 2019/2020, 2021). This gives a clear picture how much of influence beverage sales have on the GDP growth of Canada. The availability of a vast amount of data opens up the possibilities of training machine learning models to extract insights and better understand beverage sales in Canada. This project aims to research these possibilities by applying multiple machine learning algorithms; multiple linear regression, random forest, and clustering on the Canadian Beverage Data supplied by Northam Group.
+
+## Problem Solution
+
+The Canadian beverage data provided by the Northam group consists of multiple datasets by province from 2019 to 2021 May. These raw datasets have been thoroughly studied to understand what features are important and how can be extracted for further analysis. Preprocessing of data has been done using power query and R before the analysis. The cleaned data contains 157k observations of the sales of different beverages during the period from February 2019 to December 2020. The data set includes a limited range of features and their corresponding units sold. To gain insights into these features and how they impact the sales of beverages, explore the data using different visualization techniques, train multiple regression models with different algorithms and unsupervised learning algorithms like clustering and analyze how different features help the model predict the sales.
+Preliminary visualization of features in the final dataset against sales has been performed to get an understanding of whether these features show any trends in terms of beverage sales. A basic understanding of the trend of beverage sales has been captured by the primary exploratory data analysis, where we see that year 2020 has more sales in comparison with 2019. Also, the distribution of provinces showed that Ontario and BC accounted for the highest beverage sales. Among all 8 types of beverages in our data, the spirit-based type sold out the most. There are four categories of beverages in our dataset; Cocktails, Coolers, Wine, and Mixers, when we checked the distribution of sales by category we observed that coolers sales were at the top, and it was closer to 50 million. Furthermore, we found out that domestic beverages sold out more compared to imported drinks. The next visualization was rather an important one, where we saw a seasonal trend in beverage sales. The time series plot showed us that peak sales are in the month of July, regardless of the year they remained the same.
+
+After seeing all these results while doing our analysis, some interesting questions arose. Why do Ontario and BC have more beverage sales? Why the year 2020 witnessed more sales compared to 2019? Why is there a seasonal trend in beverage sales, especially during the summer season in Canada? To examine this, we considered incorporating secondary data such as population; to check per capita sales, Temperature; to check if there is any relationship between sales and weather, and Income; to understand whether household income has any effect on sales of beverages and at last Drinkers data to check the correlation with respect to sales.
+
+Using population extracted from a secondary source, per capita sales have been captured. This is further used to observe the distribution of per capita sales by year, type, category, and source. The result we acquired from this exploratory data analysis is **Yukon** has the highest per capita sales given that Yukon is the second smallest populated location in Canada.
+
+The next big step in our analysis is to prepare our data for modeling in order to predict and understand the features influencing the sales of beverages. From the preliminary analysis, we gained that there are some features that have some effect on our beverage sales. To be able to conclude that we would require much more accurate results, and machine learning algorithms can help in getting reliable results. So as to prepare the data for modeling, we ought to do is to check how observations are spread out in the data. Since our data contains features with high cardinality and also the overall skewness of the data is high, some data trimming has been performed to make it more meaningful. Some statistical techniques are used to limit the extreme observations in our source, especially with respect to **Bottle Size**  and **Sales** in our dataset.
+
+After trimming and summarizing, our dataset contains about 18k observations for our modeling. For the first modeling part, we did not use the secondary data extracted from different sources. We began by analyzing the linearity in our given dataset. For the purpose of checking linearity in our data, we used a regression algorithm called linear regression. After training the model we found out that there are so many features that show significance in the prediction of sales of beverages. However, the term indicating the goodness of fit of the model was very low, 13.5%. This means only 13.5% of the variance in the data could be explained using this model. Apart from this a residual plot of this model also detected a non-linearity in our observations. Since we did not get a good model to predict our sales, we performed another regression algorithm to get a much more reliable result.
+
+The next model is a tree-based model, which is used to understand the feature's importance. After training the model we achieved a 44.21% **variance explained**, which means 44% of the variance in **Sales** can be explained using this model.  The feature importance plot of this model captured features with high importance; Type, BottleSize, Location, Source, and Category are the most relevant factors that affect beverage sales. To summarize, we got a better model for the prediction of beverage sales and we identified the important features in our primary dataset by using this regression algorithm.
+
+The next model is to cluster the observations based on the similarity in the data. This model grouped our data into small five groups based on some similarities found in our summarized dataset.  By grouping like this, it would be easier to understand the observations in our dataset. On what basis the data sets are grouped together, and what features are more in one cluster compared to other clusters. These findings can be useful to manipulate our data for further analysis and future research.
+
+All three models gave some insights into our primary data. The next step is to perform a deeper analysis by including secondary data acquired from multiple sources including the Statistics Canada website. Similarly, we ran all three models with secondary data to find out the model accuracy and to see whether these external factors have any effect on the prediction of sales of beverages.
+As we can see, the first model to check the linearity in the data hasn’t made any improvement in the prediction of sales even after incorporating secondary data like **population, temperature, income, and drinkers**. The term explaining how well the model can predict the variance in our data was still low, 13.5%.
+
+So as done before we moved on to our more powerful second model. The model performance has increased to 57.9% from 44%, which is definitely better than our previous models. Also, from the feature importance table and from the plot, we identified the most important variables in predicting beverage sales. The features are listed from highest to lowest in terms of the importance; **BottleSize, Source, Type, Category, Population Location, Drinkers, Income, Year, and Temperature**. The more important variable is **BottleSize** and the least important feature is *Temperature. 
+
+Finally, we ran the model with secondary data to cluster the observations based on the similarity and we have got 8 clusters this time. Earlier it was only 5 and after incorporating secondary data the cluster sizes have gone up. That means more variety of observations are there in our data and more groups are required to group those on the basis of similarity. 
+
+To summarise, this project explored various visualization techniques and three different machine learning models to check if there exist meaningful features in the Beverages dataset that can be used to accurately predict the sales of beverages. Although we were not able to achieve decent predictive performance with our first model, the random forest algorithm gave us the best performance on the data as well as provided insights into the most important features that are driving the beverage market.
+
+\newpage
+
+# Objectives
+
+The beverage market is a highly competitive market where the sales of beverages are driven by a lot of factors. The demand for alcoholic beverages has increased ever since the pandemic. Research done by the JAMA network shows that monthly national retail sales of alcohol exhibited a monthly increase of 5.5% compared to the non-pandemic era (Mackillop et al., 2021). Not only beverage sales are part of every social event, but it also has huge importance in the GDP growth of the country. So it’s vital to understand the factors influencing beverage sales and the prediction of sales in the foreseeable future.
+
+The main objective of this project is to identify and understand the influence of factors that are affecting the sales of beverages in Canada by building multiple machine learning models like Linear Regression, Random Forest, and Clustering.  Before building a model Exploratory Data Analysis(EDA) will be conducted to obtain a better understanding of our data. This will help in choosing the important features and thus help improve the performance of our models.
+
+
+# Methodology
+
+## Data Cleaning
+
+To initiate our analysis, we first cleaned and rearranged our raw data to make it analyzable. We used Excel to load the raw data, and used power query to combine, filter as well as split entries into separate columns so that each column represented one field. We also incorporated secondary data for later analysis, including population, temperature, income, and numbers of heavy drinkers. For missing values, we replaced them with mean, and removed the ones which were not replaceable.
+
+## Exploratory Data Analysis
+
+After we rearranged the data, we used R Studio to start the analysis. To get a good grip on features, we conducted exploratory data analysis with visualization to know the relationship between features, and statistical summaries to understand basic statistical figures such as means, ranges and quantiles of variables. We also noticed there were potential outliers; we replaced those by setting upper and lower limits.
+
+## Modeling
+
+We built three models with two supervised learning algorithms and one unsupervised algorithm. Supervised models were used to find relationships between features and the target feature. Whereas the unsupervised model was used to understand the unlabeled features and discover the patterns and trends in all the features.
+
+### Multiple Linear Regression (Supervised): 
+We used multiple linear regression model to describe the relationship between sales and other features with a straight-line relationship. For example, how will sales be affected if we increase one unit of bottle size in cooler beverages? 
+
+### Random Forest (Supervised): 
+
+Random forest is used to understand how features can be partitioned based on importance to provide the optimal prediction of sales by using modified decision tree strategy, which assigned sales prediction by the average of the partitioned group.
+
+
+
+### Clustering (Unsupervised):
+
+Clustering uses unsupervised techniques to group the data based on similarities of different attributes, which is measured by distance. Since our data type has both numeric and categorical features, we need to use K-Prototype clustering rather than K-Mean (for numeric) and K-Mode (for category). 
+
+## Incorporation of Secondary Data
+
+Due to insufficient features in our data set, and most of them were categorical ones, we incorporated secondary data such as population, temperature, and numbers of heavy drinkers to help us gain more insight in combination of internal and external data. Therefore, we first built models with primary data, and compared them with the ones with secondary data to see if external factors had any influence on beverage sales.
+
+
+# Limitations
+
+As we proceeded analysis with both primary and secondary data, there may be some possible limitations in this study. 
+
+## Insufficient Features
+
+Although there were 12 features in our primary data set, some of them we did not include in our analysis process due to incomplete entries and insufficient analytical information. For example, CSPC ( Canadian Standard Product Code) was no longer required to appear on containers ever since 2004, therefore many entries had missing values under this feature.We could not replace missing values with other statistics either, as CSPS is nominal and identity variable which cannot apply  mathematical computation.  Due to less features, it limited the complexity of the model to capture the variance in the data. Hence, we used 8 variables with incorporation with secondary data for model building.
+
+## Imbalanced Variable Classes
+
+In our preliminary data set, most of the variables were categorical with high cardinality that were difficult to interpret the relationship with the target variable. For example, Agent, Brand Name, and Brand Code, they were all nominal features and had multiple different categories (more than 100 unique values). It would be less interpretable to build models or group data together based on enormous categories. With such variables, we used EDA with visualization to gain insight into variables such as Top 10 Agents and Top 10 Brand Names.
+
+## Highly Skewed Data
+
+As we checked the statistical summary, some variables were found to be highly skewed with extreme values, which could possibly lead to incorrect models as the algorithm could be significantly affected. For example, the bottle size feature had a wide range of values, from 300 to 20000 units, and the extreme values could be either input errors or different measurements. Without properly specifying or differentiating values, the predicting performance will lose its accuracy and generalizability. Hence, we removed extreme values by setting upper and lower boundary values before modeling.
+
+## Inconsistent and Incomplete Secondary Data.
+
+Due to insufficient features in the preliminary data set, we incorporated secondary data to enrich the depth of our analysis by looking at demographic and environmental factors. However, some secondary data that we collected were not up-to-date or completed. For example, the provincial average monthly temperature was calculated by the average from 2014 to 2022, and some provincial data for the number of heavy drinkers and income were not provided, so we replaced them with the averages of other provinces. 
+\newpage
+
+# Conclusion and Recommendations: 
+
+From the exploratory data analysis we can see that many features have impacts on sales. For example, cooler is the most popular category and spirit-based has the top sales regarding beverage types. We also see seasonal trends which show that July is the best selling month. As for secondary data that we applied with analysis, except population has high correlation with numbers of heavy drinkers, there is not much correlation to beverage sales. 
+ 
+For future research we would recommend to acquire more internal features, especially numeric ones, to optimize model building and training process. For example, we might be able to discover a better linear relationship with other beverage information to increase predicting performance, or to find correlation between existing features and others. It is also recommended to review the way of data collection for bottle size feature. Since the range for this feature is anywhere from a few hundreds to a couple thousand, which in essence it is almost impossible to see such a large volume for retailed beverage bottles only if they are measured in different units. Therefore, it will be more precise and accurate if bottle size units are recorded in the same way, such as per bottle, per pack, per case, etc.
+ 
+We also suggest to discovering and including other consolidated external data to enrich analysis from different aspects.  For example, During year 2019 to 2020 it was when Covid-19 hit the world, and it would be interesting to see how it would have affected, if any,  beverage sales figures. Such external variables could be, infection rate, death rate, quarantine  regulations, etc. 
+
+
+
+# Results
+
+## Exploratory Data Analysis
+
+```{r,echo=FALSE}
+
+beverage <- read.csv("Beverages.csv")
+#beverage
+
+```
+
+
+```{r,echo=FALSE}
+#Renaming Year col and coercing sales to integer
+beverage$Sales <- as.integer(beverage$Sales)
+beverage <-beverage %>% rename(Year = ï..Year)
+```
+
+
+```{r, echo=FALSE}
+# Filtering out rows with Sales or Bottle Size columns NA
+beverage <- filter(beverage, !(is.na(Sales) | is.na(BottleSize)))
+
+```
+
+
+We start off by understanding the distribution of each features in our primary data against Sales. By conducting EDA our main focus is to get a basic idea of the features in our primary dataset and to identify what features are important in order to use that in our modeling. 
+
+### Total Sales by Year
+
+The below bar chart shows the sales by year, where we can see that year 2020 witnessed more sales compared to 2019. In 2019 sales were almost 25 million, by 2020 sales boomed to 35 million. This is a huge jump, and we can assume there are some external factors that influenced the sales of beverages.
+
+```{r,echo=FALSE}
+ggplot(beverage, aes(x=as.factor(Year), y=Sales)) + 
+  geom_bar(stat="identity", width=.1, fill="tomato3") + 
+  labs(
+    title="Total Sales by Year",
+    subtitle="",
+    x="Year", 
+    y="Sales") + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+\newpage
+
+### Total Sales by Provinces
+
+The next graph shows the distribution of sales by province. Here it's clear that Ontario and British Columbia accounted for the major sales compared to all other provinces. Also, we can see Alberta came in third in terms of sales. Everyone knows that Ontario is the most populated province in Canada and we can certainly make some assumptions about the relationship between population and Sales.   
+
+```{r,echo=FALSE}
+ggplot(beverage, aes(x=as.factor(Location), y=Sales)) + 
+  geom_bar(stat="identity", width=.1, fill="tomato3") + 
+  labs(
+    title="Total Sales by Province",
+    subtitle="",
+    x="Province", 
+    y="Sales") + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+
+\newpage
+
+### Total Sales by Type
+
+The third feature we have taken is "Type", here we are looking for which type sold out the most. From the below graph we see that "spirit-based" beverages are on top of the game compared to other types. The second best-selling type is "cooler-based" beverages.
+
+```{r, echo=FALSE}
+ggplot(beverage, aes(x=as.factor(Type), y=Sales)) + 
+  geom_bar(stat="identity", width=.1, fill="tomato3") + 
+  labs(
+    title="Total Sales by Type",
+    subtitle="",
+    x="Type", 
+    y="Sales") + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+\newpage
+
+### Total Sales by Beverage Category
+
+The next bar plot is for total sales by **Category**. We have four types of categories in our dataset; Cocktails, Cooler, Wine, and Mixers. Although we have a category called Mixers in our data, we don't have any observations with respect to sales. Among the other three categories, we see that coolers sold out the most.
+
+```{r,echo=FALSE}
+ggplot(beverage, aes(x=as.factor(Category), y=Sales)) + 
+  geom_bar(stat="identity", width=.1, fill="tomato3") + 
+  labs(
+    title="Total Sales by Category",
+    subtitle="",
+    x="Category", 
+    y="Sales") + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+\newpage
+
+### Total Sales by Source
+
+Below is the last basic feature distribution plot against sales. We can observe that domestic beverages are the best-selling beverages compared to imported. One can only assume that it would have something to do with the cost factor.
+
+```{r, echo=FALSE}
+ggplot(beverage, aes(x=as.factor(Source), y=Sales)) + 
+  geom_bar(stat="identity", width=.1, fill="tomato3") + 
+  labs(
+    title="Total Sales by Source",
+    subtitle="",
+    x="Source", 
+    y="Sales") + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+\newpage
+
+### Checking for Seasonal Trends.
+
+```{r,echo=FALSE}
+
+sales_by_year_month  <- beverage %>%
+  dplyr::group_by(Year, Month) %>%
+  dplyr::summarise(TotalSales=sum(Sales))
+
+#sales_by_year_month
+ggplot(sales_by_year_month, aes(x=as.Date(paste("01", sales_by_year_month$Month, sales_by_year_month$Year), "%d %m %Y"), y=TotalSales)) + 
+  labs(
+    title="Time Series",
+    subtitle="",
+    x="Month-Year", 
+    y="Sales")+
+  geom_line()
+
+```
+
+
+From the above plot, it is very clear that there exists a seasonal trend. When we first look at 2019 starting from January till July, it follows an exponential growth and in the month of July, sales are at their peak. A similar trend can be seen in 2020 also. One must wonder, why is there a peak in July and why the trend is so similar? What are the factors influencing this trend? These are the questions that arise from this plot. Upon looking at the external factor like temperature; we found out that during the June-July-August period average high-temperature rises with occasional extreme heat in some parts of Canada.
+
+\newpage
+
+
+The below two graphs; distribution of the types of drinks sold at different times of the year and type of drink distribution by provinces are to understand the trends in sales with respect to time period and provinces. The seasonal trend graph follows a similar exponential pattern in terms of the sales of drinks. It can be seen that spirit-based beverage sales are the number one throughout the period, even during the summertime. This is then followed by cider-based and malt-based.
+
+Earlier, we found out that ONT, BC, and ALB are the provinces with the highest sales. This distribution shows what are the types of beverages that sold out the most in these provinces. We saw a similar trend here as well, sales of spirit-based drinks are the most, then cider-based, and malt-based. The rest of the types of beverage sales pale in comparison with these three top types.
+
+
+ **Distribution of type of drinks sold at different time of the Year.**
+
+```{r,echo=FALSE}
+
+ggplot(beverage, aes(fill=Type, y=Sales, x=as.Date(paste("01", Month, Year), "%d %m %Y"))) + 
+  labs(
+    title="Distribution of Sales by Type",
+    subtitle="",
+    x="Month-Year", 
+    y="Sales")+ 
+    geom_bar(position="stack", stat="identity")
+
+```
+
+\newpage
+
+**Type of drinks distribution by Province**
+
+```{r,echo=FALSE}
+
+ggplot(beverage, aes(fill=Type, y=Sales, x=Location)) +
+   labs(
+    title="Distribution of Sales by Province",
+    subtitle="",
+    x="Province", 
+    y="Sales")+ 
+    geom_bar(position="stack", stat="identity")
+
+```
+
+
+Later in our analysis, we will be considering all the assumptions that we made from our preliminary analysis. From the first plot we saw, 2020 had more sales, maybe external factors like COVID had some influence on the spike in beverage sales. From the second plot, we saw that more populated provinces like Ontario, British Columbia, and Alberta had the highest sales. From the seasonal trend plot, we could clearly see a surge in sales during the summer season. All these observations that we made will be used to extract secondary data for further analysis. So we will try to extract features like population, temperature, COVID related data if it's possible to analyze further.
+
+
+\newpage
+
+### Top 10 Agents By Sales
+
+From the table we can see that RTD CADANA has the highest sales figure that is around 10 million, which almost doubles the values of the second highest sales agent, DIAGEO CANADA. The sales for rest of the top 10 agents fall between 2 million to 3 million. 
+ 
+
+```{r,echo=FALSE}
+
+#Top 10 Agents by Sales
+sales_by_agent <- beverage %>%
+  dplyr::group_by(Agent) %>%
+  dplyr::summarise(Sales=sum(Sales))
+head(sales_by_agent[order(-sales_by_agent$Sales),], 10)
+```
+
+
+### Top Agents In Each Provinces
+
+To specifically find the top agent in each province, RTD CANANDA is again the leading agent in most of the provinces. In BC, however, the top agent is NORTHAM BREWERY, which has sales around 3 million. For Nunavut as well as Prince Edward Island, DIAGEO CANADA is the top agent in these two provinces, and the sales are around 40K and 50K, respectively.
+
+```{r,echo=FALSE}
+#Top Agents in Each Provinces.
+top_agents_in_prov <- beverage %>%
+  dplyr::group_by(Location, Agent) %>%
+  dplyr::summarise(Sales=sum(Sales)) %>%
+  dplyr::group_by(Location) %>%
+  dplyr::filter(Sales==max(Sales))
+head(top_agents_in_prov[order(-top_agents_in_prov$Sales),], 10)
+#top_agents_in_prov
+```
+
+### Top 10 Sold Brands
+
+
+According to the Top 10 Sold Brands list , SMIRNOFF ICE has the most sales, which is around 2.4 million. Another thing to notice is that TWISTED TEA brand is pretty popular compared to others, since there are three series products on the top 10 list, including TWISTED TEA ORIGINAL, TWISTED TEA HARD ICED TEA, and TWISTED TEA MIXED PACK.
+
+
+```{r,echo=FALSE}
+
+ #Top 10 Sold Brands
+sales_by_brand <- beverage %>%
+  dplyr::group_by(BrandName) %>%
+  dplyr::summarise(Sales=sum(Sales))
+head(sales_by_brand[order(-sales_by_brand$Sales),], 10)
+```
+
+### Seasonal Trend For The Top 10 Sold Brands
+
+As we saw the seasonal trends previously, the changes are reflected in the top 10 sold brands as well. In both 2019 and 2020, July had the highest sales numbers. However, in 2019, SMIRNOFF ICE was the top sales brand that year, but it was replaced by WHITE CLAW BLACK CHERRY in the next year. Since the product was not launched until February 2020, the sales line remained horizontal at 0 before that time. Yet, as soon as it was launched, sales increased rapidly and exceeded SMIRNOFF ICE in a short period of time. We could therefore infer that WHITE CLAW BLACK CHERRY was a popular beverage which successfully muscled for market share.
+
+```{r,echo=FALSE,message=FALSE}
+top_brands <- head(sales_by_brand[order(-sales_by_brand$Sales),], 10)$BrandName
+#top_brands
+
+sales_top_brands = beverage[beverage$BrandName %in% top_brands,]
+#sales_top_brands
+
+sales_top_brands <- sales_top_brands %>%
+  dplyr::group_by(Year,Month,BrandName) %>%
+  dplyr::summarise(TotalSales=sum(Sales))
+#head(sales_top_brands)
+#sales_top_brands
+
+ggplot(sales_top_brands, aes(
+      x=as.Date(paste("01", sales_top_brands$Month, sales_top_brands$Year), "%d %m %Y"), 
+      y=TotalSales,
+      colour=BrandName
+    )
+  ) +
+  labs(
+    title="Top 10 Sold Brands",
+    subtitle="",
+    x="Month-Year",
+    y="Sales")+
+  geom_line() + 
+  theme(
+    legend.position = "bottom",
+    legend.title = element_text(size = 7), 
+    legend.text = element_text(size= 4)
+    )
+```
+\newpage
+
+### Top 10 Bottle Sizes by Sales
+
+From the table of Top 10 Bottle Sizes by Sales we see that the most common bottle size is around 2.1 liters, which has 17 million sales. The Second highest sales was the bottle size around 470 ml which made approximately 9 millions.
+
+
+```{r,echo=FALSE}
+
+
+#Top 10 Bottle Sizes by Sales
+sales_by_bottle_size <- beverage %>%
+  dplyr::group_by(BottleSize) %>%
+  dplyr::summarise(Sales=sum(Sales))
+head(sales_by_bottle_size[order(-sales_by_bottle_size$Sales),], 10)
+```
+
+
+### Per Capita Sales by Provinces
+
+Previously we saw that BC and Ontario have the highest provincial total beverage sales, and here we divided the total sales by provincial population to see per capita sales. In general, Yukon has the most per capita sales, as on average people purchased 2 units of beverage in 2019 and 2.5 in the next year. The second highest one is BC, which had 1.5 per capital sales in 2019, and 2 in year 2020.
+
+```{r,echo=FALSE}
+population_df <- read.csv("Population.csv", header=TRUE, fileEncoding = "UTF-8-BOM", check.names = FALSE)
+#population_df
+
+# change to long format (CSV is in wide format with 2019 and 2020 as columns)
+pop_long <- reshape(
+  population_df, times = c("2019", "2020"), varying = c("2019", "2020"), 
+  v.name = c("Population"), idvar = "Province", direction = "long")
+
+pop_long$Population <- as.numeric(gsub(",", "", pop_long$Population))
+pop_long <- pop_long %>%
+  dplyr::rename(Location=Province,Year=time) # rename to match Sales DF
+#pop_long
+```
+
+```{r,echo=FALSE,message=FALSE}
+sales_by_province <- beverage %>%
+  dplyr::group_by(Year, Location) %>%
+  dplyr::summarise(Sales=sum(Sales))
+#sales_by_province
+```
+
+```{r,echo=FALSE}
+# Per-Capita Sales = Sales / Population
+per_capita_sales_df <- merge(pop_long, sales_by_province, by=c("Year", "Location"))
+per_capita_sales_df$PerCapitaSales <- per_capita_sales_df$Sales / per_capita_sales_df$Population
+#per_capita_sales_df[order(-per_capita_sales_df$PerCapitaSales),] # sorted in descending order.
+```
+```{r,echo=FALSE}
+ggplot(per_capita_sales_df, aes(fill=Location, y=PerCapitaSales, x=Year)) + 
+  labs(
+    title="Distribution of Per capita Sales",
+    subtitle="",
+    x="Year", 
+    y="PerCapitaSales")+
+    geom_bar(position="dodge", stat="identity")
+```
+\newpage
+
+
+### Per Capita Sales by Type
+
+
+From the graph of per capita sales by types of beverages, we notice that spirit based is still the most popular type of drink, followed by cider based and then malted based. This presents the same traits as the national sales by type graph that we mentioned earlier.
+
+```{r,echo=FALSE,message=FALSE}
+sales_by_type <- beverage %>%
+  dplyr::group_by(Location, Type, Year) %>%
+  dplyr::summarise(Sales=sum(Sales)) 
+#head(sales_by_type[order(-sales_by_type$Sales),], 10)
+```
+```{r,echo=FALSE}
+per_capita_type <- merge(pop_long, sales_by_type, by=c("Year", "Location"))
+```
+
+```{r,echo=FALSE}
+ggplot(per_capita_type, aes(fill=Type, y=Sales/Population, x=Location)) +
+   labs(
+    title="Sales per Capita by Type",
+    subtitle="",
+    x="Province", 
+    y="Sales per Capita")+ 
+    geom_bar(position="stack", stat="identity")
+```
+\newpage
+
+### Per Capita Sales by Category
+
+
+In each province, coolers are the most popular category of beverage, and cocktails are the second. As for mixers and wine, sales are too little to notice. The observation is similar with the national category sales that we saw earlier.
+
+
+```{r,echo=FALSE,message=FALSE}
+sales_by_category <- beverage %>%
+  dplyr::group_by(Location, Category, Year) %>%
+  dplyr::summarise(Sales=sum(Sales)) 
+#head(sales_by_category[order(-sales_by_category$Sales),], 10)
+```
+```{r,echo=FALSE}
+per_capita_category <- merge(pop_long, sales_by_category, by=c("Year", "Location"))
+```
+
+```{r, echo=FALSE}
+ggplot(per_capita_category, aes(fill=Category, y=Sales/Population, x=Location)) +
+   labs(
+    title="Sales per Capita by Category",
+    subtitle="",
+    x="Province", 
+    y="Sales per Capita")+ 
+    geom_bar(position="stack", stat="identity")
+```
+\newpage
+
+### Per Capita Sales by Source
+
+For the sales per capita by source, it is obvious that domestic beverage is the main channel to procure the beverages, since the number of sales is at least twice more than sales by imported channel. It is probably because imported beverage usually cost more, such as shipping costs, taxes, packing fees, etc.
+
+
+```{r,echo=FALSE,message=FALSE}
+sales_by_source <- beverage %>%
+  dplyr::group_by(Location, Source, Year) %>%
+  dplyr::summarise(Sales=sum(Sales)) 
+#head(sales_by_source[order(-sales_by_source$Sales),], 10)
+```
+```{r,echo=FALSE}
+per_capita_source <- merge(pop_long, sales_by_source, by=c("Year", "Location"))
+```
+
+```{r,echo=FALSE}
+ggplot(per_capita_source, aes(fill=Source, y=Sales/Population, x=Location)) +
+   labs(
+    title="Sales per Capita by Source",
+    subtitle="",
+    x="Province", 
+    y="Sales per Capita")+ 
+    geom_bar(position="stack", stat="identity")
+```
+\newpage
+
+## Modeling: Before Incorporating Secondary Data
+
+
+
+
+### Preprocessing the data for modelling
+
+After a thorough exploratory data analysis, we are going to build machine learning algorithms to see the factors which we found out are important in the prediction of sales is in fact important by using two regression methods. The first step in building modeling is pre-processing of the data. Since our primary dataset contains more categorical variables we need to check what are the best-suited features we can choose for modeling. For this purpose, we looked at the cardinality of each feature in the dataset and found out that some of the variables like Agent and BrandName have high cardinality that the others in our dataset. As a result of this, we excluded these variables and summarised our data for modeling.
+
+The next step is to check for outliers in our data and deal with them. First, we considered our dependent variable "Sales", to see how skewed the observations are. From the below plot it is evident that the observations are highly skewed in terms of sales. In the next boxplot, we see that the outliers are removed and our data looks cleaner. Outlier detection and removal have been done using the interquartile rule.
+
+
+```{r,echo=FALSE}
+beverage_for_mlr <- beverage
+beverage_for_mlr$Month <- as.factor(beverage_for_mlr$Month) # month as factor to use as dummy var
+#beverage_for_mlr
+```
+
+
+```{r,echo=FALSE}
+
+#Categorical variables that can be used for modeling. Choosing variables with relatively low cardinality.
+card_type <-dplyr::count(beverage_for_mlr, Type, sort=TRUE)
+card_category<-dplyr::count(beverage_for_mlr, Category, sort=TRUE)
+card_source<-dplyr::count(beverage_for_mlr, Source, sort=TRUE)
+card_month<-dplyr::count(beverage_for_mlr, Month, sort=TRUE)
+card_agent<-dplyr::count(beverage_for_mlr, Agent, sort=TRUE)
+card_brandname<-dplyr::count(beverage_for_mlr, BrandName, sort=TRUE)
+# model.matrix(~Category, data=beverage)
+```
+
+
+
+
+
+```{r,echo=FALSE}
+
+#Lets summarise the dataset by keeping only relevant categorical variables. this will give us a manageable dataset
+beverage_summarised <- beverage %>%
+  dplyr::group_by(Year, Month, Location, Type, Category, Source, BottleSize) %>%
+  dplyr::summarise(Sales=sum(Sales))
+
+#beverage_summarised
+```
+
+
+
+```{r,echo=FALSE}
+#Lets deal with outliers, Remove outlier rows w.r.t both Sales and BottleSize
+ggplot(beverage_summarised, aes(x=Location, y=Sales)) + 
+  geom_boxplot()
+```
+
+
+
+```{r,echo=FALSE}
+# obvious outliers - Sales and BottleSize == 0
+beverage_summarised <- filter(beverage_summarised, !Sales == 0)
+beverage_summarised <- filter(beverage_summarised, !BottleSize == 0)
+#beverage_summarised
+```
+
+```{r,echo=FALSE}
+# Sales Outliers using IQR
+
+q <- quantile(beverage_summarised$Sales, probs = c(.25, .75), na.rm=FALSE)
+#q
+
+iqr <- IQR(beverage_summarised$Sales)
+#iqr
+
+
+up <-  q[2]+1.5*iqr # Upper Range  
+low<- q[1]-1.5*iqr # Lower Range
+
+
+#up
+#low
+```
+
+
+
+
+```{r,echo=FALSE}
+bev_summ_nooutlier <- subset(beverage_summarised, beverage_summarised$Sales > low & beverage_summarised$Sales < up)
+#bev_summ_nooutlier
+
+```
+```{r,echo=FALSE}
+ggplot(bev_summ_nooutlier, aes(x=Location, y=Sales)) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  geom_boxplot(varwidth=T, fill="plum")
+```
+
+
+\newpage
+
+Similarly, we checked the "BottleSize" which is also a quantitative feature in our dataset. Here also we see the observations are highly spread out. We applied the same rule to BottleSize as well by using Interquartile and we got a good-looking boxplot after we dealt with outlier detection and removal.
+
+
+```{r,echo=FALSE}
+
+#before handling outliers
+ggplot(beverage_summarised, aes(x=Location, y=BottleSize)) + 
+  geom_boxplot()
+```
+
+```{r,echo=FALSE}
+# Sales Outliers using IQR
+
+q <- quantile(bev_summ_nooutlier$BottleSize, probs = c(.25, .75), na.rm=FALSE)
+#q
+
+iqr <- IQR(bev_summ_nooutlier$BottleSize)
+#iqr
+
+
+up <-  q[2]+1.5*iqr # Upper Range  
+low<- q[1]-1.5*iqr # Lower Range
+
+
+#up
+#low
+```
+```{r,echo=FALSE}
+bev_summ_nooutlier <- subset(bev_summ_nooutlier, bev_summ_nooutlier$BottleSize > low & bev_summ_nooutlier$BottleSize < up)
+#bev_summ_nooutlier
+```
+
+```{r,echo=FALSE}
+ggplot(bev_summ_nooutlier, aes(x=Location, y=BottleSize)) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  geom_boxplot(varwidth=T, fill="orange")
+```
+
+```{r,echo=FALSE}
+bev_summ_nooutlier$BottleSize <- scale(bev_summ_nooutlier$BottleSize)
+#bev_summ_nooutlier
+```
+
+
+
+
+
+
+```{r,echo=FALSE}
+#Converting Month and Year to a factor to treat it as Categorical variables.
+bev_summ_nooutlier$Month <- as.factor(bev_summ_nooutlier$Month)
+bev_summ_nooutlier$Year <- as.factor(bev_summ_nooutlier$Year)
+
+#bev_summ_nooutlier
+```
+
+### Multiple Linear Regresssion
+
+
+```{r,echo=FALSE}
+set.seed(42)
+model_mlr <- lm(Sales ~ ., data=bev_summ_nooutlier)
+
+summary(model_mlr)
+
+```
+
+
+We develop a multiple regression using Year, Month, Location, Category, Type, and BottleSize and check how well the regression model explains the variability in Sales of beverages and also see the factors that have a high significance in predicting sales of beverages.
+
+All the categorical variables we have taken are coerced to factor for the regression analysis. Also, it appears to be high significance for lots of coefficients in our model, the overall adjusted R-squared is only 0.1352.  So only 13.5% of the variance in the data could be explained using the MLR model. The outcome of the regression analysis is very poor and the reason for this could be because of the non-linearity in our observations. We have already seen that our data is highly skewed and there are so many extreme points present in the dataset. When regression is trying to capture a straight line through the available data it is failing to do so. Because of this, we got a very poor adjusted R-squared, that defines the model performance.
+
+
+
+```{r,echo=FALSE}
+res <- resid(model_mlr)
+```
+
+
+
+```{r,echo=FALSE}
+plot(fitted(model_mlr), res, col="blue", xlab = "Fitted", ylab = "Residual", main= "Residual vs Fitted")
+abline(0,0)
+```
+
+Looking at the residual plot it is clear that the model is unable to capture the patterns in the the dataset. We can see that the residuals are not equally distributed around 0 indicating an existence non-linear patterns in the dataset that the regression model not able to capture. So, we will be training another machine learning algorithm to see if we can get a better model to predict sales and to identify the important features.
+
+
+
+
+
+
+### Random Forest Model
+
+Next, a different supervised learning algorithm, random forest is used to predict the **Sales** and understand the feature importance in predicting **sales of beverages**. A random forest uses a collection of weak decision trees to greatly reduce the overfitting problem. The model was trained on the summarized data with 18.6k observations, with setting the importance flag set TRUE as we wanted to analyze the most important features that contribute to the predictions of beverage sales.
+
+
+```{r,echo=FALSE}
+set.seed(42)
+rf <-randomForest(Sales~., data=bev_summ_nooutlier, ntree=500, importance=TRUE) 
+
+print(rf)
+```
+
+
+From the model, we obtain % Var explained:41.41. This means 41% of the variance in Sales can be explained using the random forest model, definitely better than the multiple regression model. Now let's look at the feature importance to understand the factors affecting sales.
+
+```{r,echo=FALSE}
+importance<-importance(rf)
+
+varImportance <- data.frame(Variables = row.names(importance), 
+                            Importance = round(importance[ ,'%IncMSE'],2))
+head(varImportance[order(-varImportance$Importance),],10)
+varImpPlot(rf, pch=18, col="red",cex=1)
+```
+
+Looking at the feature importance table, we could see that features **Type, BottleSize, Location, Source, and Category** are the most relevant factors that affect beverage sales. The above plot also shows the importance of these factors. %IncMSE and %IncNodePurity are the two measures that are used to measure the importance of variables in the random forest model. The higher the values of these two with respect to variables in our model, the importance of these features also would be higher.
+
+
+
+
+
+
+### Unsupervised learning: K-prototypes clustering
+
+
+
+We use K-prototype clustering algorithm to understand similarities between different attributes, including Yeaer, Month, Location, Type, Category, and Source. Similarity is measured by distance, and it helps us to properly partition our data into several groups as well as identify the dominant components in each groups.
+
+
+```{r,echo=FALSE}
+beverage_for_kptt <- bev_summ_nooutlier
+#str(beverage_for_kptt)
+```
+```{r,echo=FALSE}
+#coerce variables to suitable class
+beverage_for_kptt$Location <- as.factor(beverage_for_kptt$Location)
+beverage_for_kptt$Type <- as.factor(beverage_for_kptt$Type)
+beverage_for_kptt$Category <- as.factor(beverage_for_kptt$Category)
+beverage_for_kptt$Source <- as.factor(beverage_for_kptt$Source)
+```
+
+
+```{r,echo=FALSE}
+beverage_for_kptt <- beverage_for_kptt[,-8]
+```
+
+
+```{r,echo=FALSE, results='hide'}
+wss<-vector()
+for (i in 2:15)
+  { wss[i] <- sum(kproto(beverage_for_kptt, i)$withinss)}
+par(mfrow=c(1,1))
+plot(1:15, wss, type="b", xlab="Number of Clusters",
+     ylab="Within groups sum of squares",
+     main="Assessing the Optimal Number of Clusters with the Elbow Method",
+     pch=20, cex=2)
+```
+
+
+
+```{r,echo=FALSE, message=FALSE}
+set.seed(42)
+# apply k-prototyps
+kpres <- kproto(beverage_for_kptt, 5)
+```
+```{r}
+#summary(kpres)
+
+```
+```{r,echo=FALSE}
+kpres$size
+kpres$centers
+```
+
+We start with a clustering model with only the primary data set. According to the elbow plot, we choose 5 clusters to be the number for grouping data points. The largest cluster has 4728 data points, which accounts for 28% of the total observations. The dominant components of each feature in this group include Year 2019, February, BC, Spirit Based Type, Coolers Category, Domestic Source.  
+
+## Modeling: After Incorporating Secondary Data
+
+
+```{r,echo=FALSE}
+#Heavy drinkers data
+drinkers <- read.csv("HeavyDrinkers.csv")
+
+drinkers <-drinkers %>% rename(Location = ï..Location) %>% rename('2019' = X2019) %>% rename('2020' = X2020)
+
+
+#drinkers
+``` 
+
+
+
+
+```{r,echo=FALSE}
+drinkers_long <- reshape(
+  drinkers, times = c("2019", "2020"), timevar = "Year", varying = c("2019", "2020"), 
+  v.name = c("Drinkers"), idvar = "Province", direction = "long")
+#head(drinkers_long)
+```
+
+
+
+```{r,echo=FALSE}
+#replace missing values with column mean
+
+
+drinkers_long$Drinkers <- as.numeric(gsub(",", "",drinkers_long$Drinkers))
+
+drinkers_long <- drinkers_long %>%
+             group_by(Year) %>%
+             mutate(Drinkers= ifelse(is.na(Drinkers), mean(Drinkers, na.rm=TRUE), Drinkers))
+
+
+
+#drinkers <- drinkers %>% mutate_all(~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)) 
+#head(drinkers_long)
+```
+
+```{r,echo=FALSE}
+drinkers_long$Location <- as.factor(drinkers_long$Location)
+drinkers_long$Year <- as.factor(drinkers_long$Year)
+```
+
+
+
+```{r,echo=FALSE}
+#Income data
+income <- read.csv("Income.csv")
+
+income <-income %>% rename(Location = ï..Location) %>% rename('2019' = 'Â.2019') %>% rename('2020' = 'Â.2020')
+
+#head(income)
+#replace missing values with column mean
+#income <- income %>% mutate_all(~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)) 
+```
+
+```{r,echo=FALSE}
+income_long <- reshape(
+  income, times = c("2019", "2020"), timevar = "Year", varying = c("2019", "2020"), 
+  v.name = c("Income"), idvar = "Province", direction = "long")
+#head(income_long)
+```
+
+
+```{r,echo=FALSE}
+#replace missing values with column mean
+
+
+
+income_long <- income_long %>%
+             group_by(Year) %>%
+             mutate(Income= ifelse(is.na(Income), mean(Income, na.rm=TRUE), Income))
+
+
+
+#drinkers <- drinkers %>% mutate_all(~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)) 
+#income_long
+```
+
+
+```{r,echo=FALSE}
+income_long$Location <- as.factor(income_long$Location)
+income_long$Year <- as.factor(income_long$Year)
+```
+
+
+
+
+
+
+```{r,echo=FALSE}
+demo <- data.frame(drinkers_long$Location, drinkers_long$Year,pop_long$Population,drinkers_long$Drinkers,income_long$Income,sales_by_province$Sales)
+colnames(demo) <- c("Location","Year","Population","Drinkers","Income","Sales")
+```
+
+
+
+
+```{r,echo=FALSE}
+secondary_data <-demo[,-6]
+#head(secondary_data)
+```
+
+```{r,echo=FALSE}
+bev_secondary_data <- merge(secondary_data, bev_summ_nooutlier, by=c("Year", "Location"))
+#head(bev_secondary_data)
+
+```
+
+
+```{r,echo=FALSE}
+#Temperature data
+temp <- read.csv("Temperatures.csv")
+
+colnames(temp) <- c("Location",'1','2','3','4','5','6','7','8','9','10','11','12')
+temp <-temp[,c(1:13)]
+```
+
+
+
+```{r,echo=FALSE}
+
+
+temp_long <- reshape(
+  temp, times = c('1','2','3','4','5','6','7','8','9','10','11','12'), timevar = "Month", varying = c('1','2','3','4','5','6','7','8','9','10','11','12'), 
+  v.name = c("Temperature"), idvar = "Province", direction = "long")
+temp_long<- temp_long[,c(1,2,3)]
+#temp_long
+
+```
+
+
+
+
+```{r,echo=FALSE}
+#Merge temp also into our bev_secondary_data
+bev_secondary_data <- merge(temp_long, bev_secondary_data, by=c( "Location","Month"))
+#bev_secondary_data
+```
+
+
+
+### Correlation 
+
+The correlation plot presents how the three external factors (population, temperature, and heavy drinkers) are related to each other as well as to the target variable, beverage sales. On the right column, we see the correlation coefficients are around 0.1 to 0.3 which show weak positive relationships towards sales. In other words, we cannot be certain that sales figures will rise if any of these variables increase. On the contrary, population and drinkers show a strong positive relationship, which has a correlation coefficient at 0.92, meaning that one will increase if the other increases too. The regression plot also shows a straight line which indicates the number of drinkers can be explained by population very well.
+
+```{r,echo=FALSE}
+#demo
+demo_num <- demo[,3:6]
+#demo_num
+#cor(demo_num)
+```
+
+```{r,echo=FALSE}
+# Function to add correlation coefficients
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...) {
+    usr <- par("usr")
+    on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    Cor <- abs(cor(x, y)) # Remove abs function if desired
+    txt <- paste0(prefix, format(c(Cor, 0.123456789), digits = digits)[1])
+    if(missing(cex.cor)) {
+        cex.cor <- 0.4 / strwidth(txt)
+    }
+    text(0.5, 0.5, txt,
+         cex = 1 + cex.cor * Cor) # Resize the text by level of correlation
+}
+# Plotting the correlation matrix 
+pairs(demo_num,
+      upper.panel = panel.cor,    # Correlation panel
+      lower.panel = panel.smooth) # Smoothed regression lines
+```
+
+
+
+### Multiple Linear Regression
+
+Here, we develop another MLR model after including secondary data. As you can see below, some regression coefficients show great significance in the predictions of sales of beverages. However, the adjusted R-squared has not improved at all. We got an adjusted R-squared of 0.1355. So only 13.6% variance in the data could be explained using this model. Yet again the model fits very poorly even with secondary data and proved a high non-linearity in our observations. So we cannot certainly say that temperature, Drinkers, and Income has important role in terms of beverage sales.
+
+```{r,echo=FALSE}
+set.seed(42)
+model_mlr_v2 <- lm(Sales ~ ., data=bev_secondary_data)
+
+summary(model_mlr_v2)
+
+```
+
+
+
+```{r,echo=FALSE}
+plot(fitted(model_mlr_v2), res, col="blue", xlab = "Fitted", ylab = "Residual", main= "Residual vs Fitted")
+abline(0,0)
+```
+
+The above residual plot is a bit better than the residual plot of the first model. Even though the residuals are somewhat equally spread, we can see some clusters around the middle part of our graph. This is not the ideal residual plot of the regression model and we can conclude regression is not the best-suited model here to predict the beverage sales because of the non-linearity in our data. 
+
+
+### Random Forest
+
+Similarly, we run a random forest on our data like earlier. Here, 57.87% of the variance in Sales can be explained using the new random forest model, definitely better than the MLR and the first RF model. Let's look at the feature importance to understand the factors affecting sales, you can see **BottleSize** is still the highest important feature in predicting sales. Also, the secondary data we incorporated are having some level of importance in the prediction of beverage sales. for instance, the population shows somewhat importance. Drinkers and Income do have a little effect, but not as much as Location.
+
+```{r,echo=FALSE}
+
+set.seed(42)
+rf_v2 <-randomForest(Sales~., data=bev_secondary_data, ntree=500, importance=TRUE) 
+
+print(rf_v2)
+```
+
+
+
+
+
+```{r,echo=FALSE}
+importance_rf2<-importance(rf_v2)
+
+varImportance_rf2 <- data.frame(Variables = row.names(importance_rf2), 
+                            Importance = round(importance_rf2[ ,'%IncMSE'],2))
+head(varImportance_rf2[order(-varImportance_rf2$Importance),],10)
+varImpPlot(rf, pch=18, col="red",cex=1)
+#importance(rf_v2)
+#varImpPlot(rf_v2,pch=18, col="red",cex=1)
+
+```
+
+### Clustering - K-Prototypes
+
+
+```{r,echo=FALSE}
+beverage_for_kptt_v2 <- bev_secondary_data
+#str(beverage_for_kptt_v2)
+```
+
+```{r,echo=FALSE}
+#coerce variables to suitable class
+beverage_for_kptt_v2$Location <- as.factor(beverage_for_kptt_v2$Location)
+beverage_for_kptt_v2$Month <- as.factor(beverage_for_kptt_v2$Month)
+beverage_for_kptt_v2$Type <- as.factor(beverage_for_kptt_v2$Type)
+beverage_for_kptt_v2$Category <- as.factor(beverage_for_kptt_v2$Category)
+beverage_for_kptt_v2$Source <- as.factor(beverage_for_kptt_v2$Source)
+```
+```{r,echo=FALSE}
+beverage_for_kptt_v2 <- beverage_for_kptt_v2[,-12]
+```
+
+```{r,echo=FALSE}
+
+beverage_for_kptt_v2$Income <- scale(beverage_for_kptt_v2$Income)
+
+beverage_for_kptt_v2$Temperature <- scale(beverage_for_kptt_v2$Temperature)
+
+beverage_for_kptt_v2$Population <- scale(beverage_for_kptt_v2$Population)
+
+beverage_for_kptt_v2$Drinkers <- scale(beverage_for_kptt_v2$Drinkers)
+#beverage_for_kptt_v2
+# bev_summ_nooutlier
+# beverage_for_kptt_v2 %>%
+#     mutate_if(is.numeric, scale)
+```
+
+```{r, echo=FALSE, results='hide'}
+wss_v2<-vector()
+for (i in 2:15){ wss_v2[i] <- sum(kproto(beverage_for_kptt_v2, i)$withinss)}
+par(mfrow=c(1,1))
+plot(1:15, wss_v2, type="b", xlab="Number of Clusters",
+     ylab="Within groups sum of squares",
+     main="Assessing the Optimal Number of Clusters with the Elbow Method",
+     pch=20, cex=2)
+```
+```{r echo=FALSE, message=FALSE}
+set.seed(42)
+# apply k-prototyps
+kpres_v2 <- kproto(beverage_for_kptt_v2, 8)
+```
+```{r echo=FALSE}
+#summary(kpres_v2)
+```
+```{r echo=FALSE}
+kpres_v2$size
+kpres_v2$centers
+```
+
+After integrating secondary data with additional features like population, temperature, and numbers of heavy drinks, we build another clustering model to see if the partition summary has been significantly changed. The elbow plot shows 8 clusters would be an ideal partition in regard to reducing within groups the sum of squares. This time each cluster has approximate sizes between 10% to 15% of total data points. The biggest group contains 2794 data points with the main components of Year 2020 , July, BC, Cider Based Type, Coolers Category, and Imported Resource. Compared to the previous cluster model, Coolers Category is the most important one regardless external factors.
+
+\newpage
+
+# Appendix
+
+
+## Data Cleaning
+The Canadian beverage sales data provide by Northam (NAT) group contains multiple small datasets by provinces from 2019 February to 2021 May. We analyzed the raw datasets to understand the observations in it and how to extract the features we wanted for our analysis to predict the beverage sales. Microsoft excel power query and R-studio tools were used to perform the extraction process.
+
+
+### Steps Involved In Cleaning
+
+First, we extracted the NAT folders by year and checked individual files to see any mismatch in the file name and the content inside the file. We found out such two files had mismatches in name and in contents and renamed those files with respect to the observations(by year) inside. After that, a merge based on all the extracted CSV files has been done using a power query. From these source files, we removed unwanted columns and changed the type of some columns to "text" from "general". In the next step, we duplicated our "SourceName" column to extract the year, province, and month. The mentioned columns are created by splitting the "sourceName" by position. Again performed split on column5 which contained agent information, here we split the data into two columns one consisting of agent name and the other consisting of sales. The next step was to replace values in the "Type" column in order to execute the fill-down method. Similarly, we did the fill-down operation on BrandName and Agent columns as well by replacing the values. Here replacing "Null" was tricky due to the different lengths of white spaces we had in the BrandName and Agent column. Since the trim query did not work in excel, we had to manually remove the white spaces by checking the length of the white spaces.
+
+Furthermore, the type column contains observations like "Spirit Based Coolers Domestic", these are different categories and we split this into meaningful features by using the split by delimiter option. We got 4 columns, and the first two columns are merged to make "Type", the second column is "Category", and the third became "Source". Some blanks value in the column "Source" were replaced by meaningful values. While splitting like this we faced some issues in the "Category" and "Source" columns, when we used delimiter some of the values were not getting it properly. To resolve this we added a custom column based on some conditions on the "Type" column. Once we resolved this issue, deleted the previous category column and renamed "Custom" to "Category.
+
+Almost 98% of merging and cleaning have been done using a power query. After that, we loaded the dataset into our R markdown and started analyzing the data for null values. We replaced blank values with "NA" as we thought it would be useful once we start the preliminary analysis. If needed, we can always change those NAs back to blank. Also, when we checked the cardinality of each column, "province" contained some values with extra characters added to it as a result of the split function used in the power query. These values are changed using the "mutate" function in R. Finally, after handling null values we had 167k observations in our cleaned data set which accounted from February 2019 to May 2021. The cleaned dataset was downloaded as CSV for further data analysis. 
+
+
+### Secondary Data Extraction
+
+Due to limited features in the primary data set, we would like to enlarge our analysis scope by considering other external factors such as demographic and environmental data. We have included provincial population, average monthly temperatures from 2014 to 2022, numbers of heavy drinkers in each province, and median after-tax income. While retrieving and organizing the data, we have found some issues. The data for income and heavy drinkers do not include three provinces (Yukon, Northwest Territories, and Nunavut), so we replace those missing values with means. 
+
+
+## R CODES
+
+```{r}
+
+beverage <- read.csv("Beverages.csv")
+head(beverage)
+
+```
+
+
+```{r}
+summary(beverage)
+nrow(beverage)
+
+```
+
+
+```{r}
+#Renaming Year col and coercing sales to integer
+beverage$Sales <- as.integer(beverage$Sales)
+beverage <-beverage %>% rename(Year = ï..Year)
+```
+
+```{r}
+unique(beverage$BottleSize)
+#filter(beverage, BottleSize >10650)
+```
+
+
+```{r}
+# Filtering out rows with Sales or Bottle Size columns NA
+beverage <- filter(beverage, !(is.na(Sales) | is.na(BottleSize)))
+
+```
+
+```{r}
+summary(beverage)
+nrow(beverage)
+```
+
+
+
+
+### EDA
+
+
+
+
+```{r}
+#a) Overall Sales Distribution
+# sales_density = density(beverage$Sales)
+# plot(sales_density)
+```
+
+
+(a) Total sales by Year
+
+
+
+```{r}
+ggplot(beverage, aes(x=as.factor(Year), y=Sales)) + 
+  geom_bar(stat="identity", width=.1, fill="tomato3") + 
+  labs(
+    title="Total Sales by Year",
+    subtitle="",
+    x="Year", 
+    y="Sales") + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+
+
+
+(b) Total sales by Provinces
+
+```{r}
+ggplot(beverage, aes(x=as.factor(Location), y=Sales)) + 
+  geom_bar(stat="identity", width=.1, fill="tomato3") + 
+  labs(
+    title="Total Sales by Province",
+    subtitle="",
+    x="Province", 
+    y="Sales") + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+
+
+(c) Sales by Type
+
+```{r}
+ggplot(beverage, aes(x=as.factor(Type), y=Sales)) + 
+  geom_bar(stat="identity", width=.1, fill="tomato3") + 
+  labs(
+    title="Total Sales by Type",
+    subtitle="",
+    x="Type", 
+    y="Sales") + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+
+(d) Sales by Beverage Category
+
+```{r}
+ggplot(beverage, aes(x=as.factor(Category), y=Sales)) + 
+  geom_bar(stat="identity", width=.1, fill="tomato3") + 
+  labs(
+    title="Total Sales by Category",
+    subtitle="",
+    x="Category", 
+    y="Sales") + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+
+(e) Checking for seasonal trends.
+
+```{r}
+
+sales_by_year_month  <- beverage %>%
+  dplyr::group_by(Year, Month) %>%
+  dplyr::summarise(TotalSales=sum(Sales))
+
+sales_by_year_month
+ggplot(sales_by_year_month, aes(x=as.Date(paste("01", sales_by_year_month$Month, sales_by_year_month$Year), "%d %m %Y"), y=TotalSales)) + 
+  labs(
+    title="Time Series",
+    subtitle="",
+    x="Month-Year", 
+    y="Sales")+
+  geom_line()
+
+```
+
+
+
+(f) Sales by source
+
+```{r}
+ggplot(beverage, aes(x=as.factor(Source), y=Sales)) + 
+  geom_bar(stat="identity", width=.1, fill="tomato3") + 
+  labs(
+    title="Total Sales by Source",
+    subtitle="",
+    x="Source", 
+    y="Sales") + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+
+
+(g) Distribution of type of drinks sold at different time of the year.
+
+```{r}
+
+ggplot(beverage, aes(fill=Type, y=Sales, x=as.Date(paste("01", Month, Year), "%d %m %Y"))) + 
+  labs(
+    title="Distribution of Sales by type",
+    subtitle="",
+    x="Month-Year", 
+    y="Sales")+ 
+    geom_bar(position="stack", stat="identity")
+
+```
+
+(h) Type of drinks distribution by province
+
+```{r}
+
+ggplot(beverage, aes(fill=Type, y=Sales, x=Location)) +
+   labs(
+    title="Distribution of Sales by Province",
+    subtitle="",
+    x="Province", 
+    y="Sales")+ 
+    geom_bar(position="stack", stat="identity")
+
+```
+
+
+
+
+(i) Top 10 Agents by Sales
+
+```{r}
+sales_by_agent <- beverage %>%
+  dplyr::group_by(Agent) %>%
+  dplyr::summarise(Sales=sum(Sales))
+head(sales_by_agent[order(-sales_by_agent$Sales),], 10)
+```
+(j) Top Agents in Each Provinces.
+
+```{r}
+top_agents_in_prov <- beverage %>%
+  dplyr::group_by(Location, Agent) %>%
+  dplyr::summarise(Sales=sum(Sales)) %>%
+  dplyr::group_by(Location) %>%
+  dplyr::filter(Sales==max(Sales))
+#top_agents_in_prov
+```
+
+
+
+
+
+(k) Top 10 Sold Brands
+
+```{r}
+sales_by_brand <- beverage %>%
+  dplyr::group_by(BrandName) %>%
+  dplyr::summarise(Sales=sum(Sales))
+head(sales_by_brand[order(-sales_by_brand$Sales),], 10)
+```
+
+Seasonal trend for the top 10 sold brands
+
+```{r}
+top_brands <- head(sales_by_brand[order(-sales_by_brand$Sales),], 10)$BrandName
+top_brands
+
+sales_top_brands = beverage[beverage$BrandName %in% top_brands,]
+#sales_top_brands
+
+sales_top_brands <- sales_top_brands %>%
+  dplyr::group_by(Year,Month,BrandName) %>%
+  dplyr::summarise(TotalSales=sum(Sales))
+head(sales_top_brands)
+#sales_top_brands
+
+ggplot(sales_top_brands, aes(
+      x=as.Date(paste("01", sales_top_brands$Month, sales_top_brands$Year), "%d %m %Y"), 
+      y=TotalSales,
+      colour=BrandName
+    )
+  ) +
+  labs(
+    title="Top 10 Sold Brands",
+    subtitle="",
+    x="Month-Year",
+    y="Sales")+
+  geom_line() + 
+  theme(
+    legend.position = "bottom",
+    legend.title = element_text(size = 7), 
+    legend.text = element_text(size= 4)
+    )
+```
+
+
+
+(l) Top 10 Bottle Sizes by Sales
+
+```{r}
+sales_by_bottle_size <- beverage %>%
+  dplyr::group_by(BottleSize) %>%
+  dplyr::summarise(Sales=sum(Sales))
+head(sales_by_bottle_size[order(-sales_by_bottle_size$Sales),], 10)
+```
+
+
+
+(m) Per Capita Sales by Provinces
+
+```{r}
+population_df <- read.csv("Population.csv", header=TRUE, fileEncoding = "UTF-8-BOM", check.names = FALSE)
+#population_df
+
+# change to long format (CSV is in wide format with 2019 and 2020 as columns)
+pop_long <- reshape(
+  population_df, times = c("2019", "2020"), varying = c("2019", "2020"), 
+  v.name = c("Population"), idvar = "Province", direction = "long")
+
+pop_long$Population <- as.numeric(gsub(",", "", pop_long$Population))
+pop_long <- pop_long %>%
+  dplyr::rename(Location=Province,Year=time) # rename to match Sales DF
+head(pop_long)
+```
+
+```{r}
+sales_by_province <- beverage %>%
+  dplyr::group_by(Year, Location) %>%
+  dplyr::summarise(Sales=sum(Sales))
+head(sales_by_province)
+```
+
+```{r}
+# Per-Capita Sales = Sales / Population
+per_capita_sales_df <- merge(pop_long, sales_by_province, by=c("Year", "Location"))
+per_capita_sales_df$PerCapitaSales <- per_capita_sales_df$Sales / per_capita_sales_df$Population
+per_capita_sales_df[order(-per_capita_sales_df$PerCapitaSales),] # sorted in descending order.
+```
+```{r}
+ggplot(per_capita_sales_df, aes(fill=Location, y=PerCapitaSales, x=Year)) + 
+  labs(
+    title="Distribution of Per capita Sales",
+    subtitle="",
+    x="Year", 
+    y="PerCapitaSales")+
+    geom_bar(position="dodge", stat="identity")
+```
+
+Yukon has the highest per capita sales.
+
+
+
+(n) Type of drinks distribution per capita 
+
+
+```{r}
+sales_by_type <- beverage %>%
+  dplyr::group_by(Location, Type, Year) %>%
+  dplyr::summarise(Sales=sum(Sales)) 
+head(sales_by_type[order(-sales_by_type$Sales),], 10)
+```
+```{r}
+per_capita_type <- merge(pop_long, sales_by_type, by=c("Year", "Location"))
+```
+
+```{r}
+ggplot(per_capita_type, aes(fill=Type, y=Sales/Population, x=Location)) +
+   labs(
+    title="Sales per Capita by Type",
+    subtitle="",
+    x="Province", 
+    y="Sales per Capita")+ 
+    geom_bar(position="stack", stat="identity")
+```
+
+(o) Category of drinks distribution per capita 
+
+```{r}
+sales_by_category <- beverage %>%
+  dplyr::group_by(Location, Category, Year) %>%
+  dplyr::summarise(Sales=sum(Sales)) 
+head(sales_by_category[order(-sales_by_category$Sales),], 10)
+```
+```{r}
+per_capita_category <- merge(pop_long, sales_by_category, by=c("Year", "Location"))
+```
+
+```{r}
+ggplot(per_capita_category, aes(fill=Category, y=Sales/Population, x=Location)) +
+   labs(
+    title="Sales per Capita by Category",
+    subtitle="",
+    x="Province", 
+    y="Sales per Capita")+ 
+    geom_bar(position="stack", stat="identity")
+```
+
+
+(p) Per capita source by sales
+
+
+```{r}
+sales_by_source <- beverage %>%
+  dplyr::group_by(Location, Source, Year) %>%
+  dplyr::summarise(Sales=sum(Sales)) 
+head(sales_by_source[order(-sales_by_source$Sales),], 10)
+```
+```{r}
+per_capita_source <- merge(pop_long, sales_by_source, by=c("Year", "Location"))
+```
+
+```{r}
+ggplot(per_capita_source, aes(fill=Source, y=Sales/Population, x=Location)) +
+   labs(
+    title="Sales per Capita by Source",
+    subtitle="",
+    x="Province", 
+    y="Sales per Capita")+ 
+    geom_bar(position="stack", stat="identity")
+```
+
+
+
+
+
+### Modeling before including external data.
+
+
+#### Preprocessing the data for modelling
+
+```{r}
+beverage_for_mlr <- beverage
+beverage_for_mlr$Month <- as.factor(beverage_for_mlr$Month) # month as factor to use as dummy var
+#beverage_for_mlr
+```
+
+
+Categorical variables that can be used for modeling. Choosing variables with relatively low cardinality.
+
+```{r}
+dplyr::count(beverage_for_mlr, Type, sort=TRUE)
+dplyr::count(beverage_for_mlr, Category, sort=TRUE)
+dplyr::count(beverage_for_mlr, Source, sort=TRUE)
+dplyr::count(beverage_for_mlr, Month, sort=TRUE)
+head(dplyr::count(beverage_for_mlr, Agent, sort=TRUE))
+head(dplyr::count(beverage_for_mlr, BrandName, sort=TRUE))
+# model.matrix(~Category, data=beverage)
+```
+Except Agent and BrandName, others have relatively low cardinality. Can be used for modelling.
+
+
+
+Lets summarise the dataset by keeping only relevant categorical variables. this will give us a manageable dataset
+
+```{r}
+beverage_summarised <- beverage %>%
+  dplyr::group_by(Year, Month, Location, Type, Category, Source, BottleSize) %>%
+  dplyr::summarise(Sales=sum(Sales))
+
+head(beverage_summarised)
+```
+
+Lets deal with outliers, Remove outlier rows w.r.t both Sales and BottleSize
+
+```{r}
+ggplot(beverage_summarised, aes(x=Location, y=Sales)) + 
+  geom_boxplot()
+```
+
+
+
+```{r}
+# obvious outliers - Sales and BottleSize == 0
+beverage_summarised <- filter(beverage_summarised, !Sales == 0)
+beverage_summarised <- filter(beverage_summarised, !BottleSize == 0)
+head(beverage_summarised)
+```
+
+```{r}
+# Sales Outliers using IQR
+
+q <- quantile(beverage_summarised$Sales, probs = c(.25, .75), na.rm=FALSE)
+q
+
+iqr <- IQR(beverage_summarised$Sales)
+iqr
+
+
+up <-  q[2]+1.5*iqr # Upper Range  
+low<- q[1]-1.5*iqr # Lower Range
+
+
+up
+low
+```
+
+
+
+
+```{r}
+bev_summ_nooutlier <- subset(beverage_summarised, beverage_summarised$Sales > low & beverage_summarised$Sales < up)
+head(bev_summ_nooutlier)
+
+```
+```{r}
+ggplot(bev_summ_nooutlier, aes(x=Location, y=Sales)) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  geom_boxplot(varwidth=T, fill="plum")
+```
+
+
+```{r}
+
+#before handling outliers
+ggplot(beverage_summarised, aes(x=Location, y=BottleSize)) + 
+  geom_boxplot()
+```
+
+```{r}
+# Sales Outliers using IQR
+
+q <- quantile(bev_summ_nooutlier$BottleSize, probs = c(.25, .75), na.rm=FALSE)
+q
+
+iqr <- IQR(bev_summ_nooutlier$BottleSize)
+iqr
+
+
+up <-  q[2]+1.5*iqr # Upper Range  
+low<- q[1]-1.5*iqr # Lower Range
+
+
+up
+low
+```
+```{r}
+bev_summ_nooutlier <- subset(bev_summ_nooutlier, bev_summ_nooutlier$BottleSize > low & bev_summ_nooutlier$BottleSize < up)
+head(bev_summ_nooutlier)
+```
+
+```{r}
+ggplot(bev_summ_nooutlier, aes(x=Location, y=BottleSize)) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  geom_boxplot(varwidth=T, fill="orange")
+```
+
+```{r}
+bev_summ_nooutlier$BottleSize <- scale(bev_summ_nooutlier$BottleSize)
+#bev_summ_nooutlier
+```
+
+
+
+
+Converting Month and Year to a factor to treat it as Categorical variables.
+
+```{r}
+bev_summ_nooutlier$Month <- as.factor(bev_summ_nooutlier$Month)
+bev_summ_nooutlier$Year <- as.factor(bev_summ_nooutlier$Year)
+
+#bev_summ_nooutlier
+```
+
+#### MLR
+
+```{r}
+model_mlr <- lm(Sales ~ ., data=bev_summ_nooutlier)
+
+summary(model_mlr)
+
+```
+
+Adjusted R-squared is only 0.1352, so only 13.5% of the variance in the data could be explained using the MLR model. Lets try a more powerful ML model.
+
+
+
+```{r}
+res <- resid(model_mlr)
+```
+
+
+
+```{r}
+plot(fitted(model_mlr), res, col="blue", xlab = "Fitted", ylab = "Residual", main= "Residual vs Fitted")
+abline(0,0)
+```
+
+Looking the residual plot it is clear that the model is unable to capture the patterns in the the dataset. We can see that the residuals are not equally distributed around 0 indicating an existence non-linear patterns in the dataset that the regression model not able to capture.
+
+
+
+#### Random Forest
+Training a Random Forest Model
+
+
+```{r}
+library(randomForest)
+set.seed(42)
+rf <-randomForest(Sales~., data=bev_summ_nooutlier, ntree=500, importance=TRUE) 
+
+print(rf)
+```
+
+
+41% of the variance in Sales can be explained using the random forest model, definitely better than the MLR. Lets look at the feature importance to undestand the factors affecting sales.
+
+```{r}
+importance<-importance(rf)
+
+varImportance <- data.frame(Variables = row.names(importance), 
+                            Importance = round(importance[ ,'%IncMSE'],2))
+head(varImportance[order(-varImportance$Importance),],10)
+varImpPlot(rf, pch=18, col="red",cex=1)
+```
+
+#### Unsupervised learning: K-mean clustering
+
+
+
+load additional  library
+
+
+The purpose of k-mean clustering is to find patterns within our data points by features, hence, we will load the original data again (excluding the target variable-Sales)
+
+```{r}
+beverage_for_kptt <- bev_summ_nooutlier
+str(beverage_for_kptt)
+```
+```{r}
+#coerce variables to suitable class
+beverage_for_kptt$Location <- as.factor(beverage_for_kptt$Location)
+beverage_for_kptt$Type <- as.factor(beverage_for_kptt$Type)
+beverage_for_kptt$Category <- as.factor(beverage_for_kptt$Category)
+beverage_for_kptt$Source <- as.factor(beverage_for_kptt$Source)
+```
+
+
+Remove Sales variable to because that is the target variable
+
+
+```{r}
+beverage_for_kptt <- beverage_for_kptt[,-8]
+```
+
+
+
+```{r}
+wss<-vector()
+for (i in 2:15){ wss[i] <- sum(kproto(beverage_for_kptt, i)$withinss)}
+par(mfrow=c(1,1))
+plot(1:15, wss, type="b", xlab="Number of Clusters",
+     ylab="Within groups sum of squares",
+     main="Assessing the Optimal Number of Clusters with the Elbow Method",
+     pch=20, cex=2)
+```
+It looks like when k = 4 we have the most significant decreasing in wss distance
+
+Apply k
+
+```{r}
+# apply k-prototyps
+kpres <- kproto(beverage_for_kptt, 4)
+kpres
+summary(kpres)
+clprofiles(kpres, beverage_for_kptt)
+```
+
+Improve the model by adding external data.
+
+
+
+
+### Modeling After Incorporating Secondary Data
+
+
+
+Heavy drinkers data
+
+```{r}
+drinkers <- read.csv("HeavyDrinkers.csv")
+
+drinkers <-drinkers %>% rename(Location = ï..Location) %>% rename('2019' = X2019) %>% rename('2020' = X2020)
+
+
+#drinkers
+``` 
+
+
+
+
+```{r}
+drinkers_long <- reshape(
+  drinkers, times = c("2019", "2020"), timevar = "Year", varying = c("2019", "2020"), 
+  v.name = c("Drinkers"), idvar = "Province", direction = "long")
+head(drinkers_long)
+```
+
+
+
+```{r}
+#replace missing values with column mean
+
+
+drinkers_long$Drinkers <- as.numeric(gsub(",", "",drinkers_long$Drinkers))
+
+drinkers_long <- drinkers_long %>%
+             group_by(Year) %>%
+             mutate(Drinkers= ifelse(is.na(Drinkers), mean(Drinkers, na.rm=TRUE), Drinkers))
+
+
+
+#drinkers <- drinkers %>% mutate_all(~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)) 
+head(drinkers_long)
+```
+
+```{r}
+drinkers_long$Location <- as.factor(drinkers_long$Location)
+drinkers_long$Year <- as.factor(drinkers_long$Year)
+```
+
+Income data
+
+```{r}
+income <- read.csv("Income.csv")
+
+income <-income %>% rename(Location = ï..Location) %>% rename('2019' = 'Â.2019') %>% rename('2020' = 'Â.2020')
+
+head(income)
+#replace missing values with column mean
+#income <- income %>% mutate_all(~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)) 
+```
+
+```{r}
+income_long <- reshape(
+  income, times = c("2019", "2020"), timevar = "Year", varying = c("2019", "2020"), 
+  v.name = c("Income"), idvar = "Province", direction = "long")
+head(income_long)
+```
+
+
+```{r}
+#replace missing values with column mean
+
+
+
+income_long <- income_long %>%
+             group_by(Year) %>%
+             mutate(Income= ifelse(is.na(Income), mean(Income, na.rm=TRUE), Income))
+
+
+
+#drinkers <- drinkers %>% mutate_all(~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)) 
+#income_long
+```
+
+
+```{r}
+income_long$Location <- as.factor(income_long$Location)
+income_long$Year <- as.factor(income_long$Year)
+```
+
+
+
+
+
+
+```{r}
+demo <- data.frame(drinkers_long$Location, drinkers_long$Year,pop_long$Population,drinkers_long$Drinkers,income_long$Income,sales_by_province$Sales)
+colnames(demo) <- c("Location","Year","Population","Drinkers","Income","Sales")
+```
+
+
+
+
+```{r}
+secondary_data <-demo[,-6]
+head(secondary_data)
+```
+
+```{r}
+bev_secondary_data <- merge(secondary_data, bev_summ_nooutlier, by=c("Year", "Location"))
+head(bev_secondary_data)
+
+```
+
+Temperature data
+
+```{r}
+temp <- read.csv("Temperatures.csv")
+
+colnames(temp) <- c("Location",'1','2','3','4','5','6','7','8','9','10','11','12')
+temp <-temp[,c(1:13)]
+```
+
+
+
+```{r}
+
+
+temp_long <- reshape(
+  temp, times = c('1','2','3','4','5','6','7','8','9','10','11','12'), timevar = "Month", varying = c('1','2','3','4','5','6','7','8','9','10','11','12'), 
+  v.name = c("Temperature"), idvar = "Province", direction = "long")
+temp_long<- temp_long[,c(1,2,3)]
+#temp_long
+
+```
+
+
+Merge temp also into our bev_secondary_data
+
+
+```{r}
+bev_secondary_data <- merge(temp_long, bev_secondary_data, by=c( "Location","Month"))
+#bev_secondary_data
+```
+
+#### Correlation Plot
+
+```{r}
+#demo
+demo_num <- demo[,3:6]
+demo_num
+cor(demo_num)
+```
+
+```{r}
+# Function to add correlation coefficients
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...) {
+    usr <- par("usr")
+    on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    Cor <- abs(cor(x, y)) # Remove abs function if desired
+    txt <- paste0(prefix, format(c(Cor, 0.123456789), digits = digits)[1])
+    if(missing(cex.cor)) {
+        cex.cor <- 0.4 / strwidth(txt)
+    }
+    text(0.5, 0.5, txt,
+         cex = 1 + cex.cor * Cor) # Resize the text by level of correlation
+}
+# Plotting the correlation matrix 
+pairs(demo_num,
+      upper.panel = panel.cor,    # Correlation panel
+      lower.panel = panel.smooth) # Smoothed regression lines
+```
+From the correlation plot we can see that the more populations the more heavy drinkers, which does make sense. However, for sales aspect, demographic factors (population, number of drinkers, and income) do not show much relevance. 
+
+
+
+
+
+
+#### MLR 
+
+```{r}
+model_mlr_v2 <- lm(Sales ~ ., data=bev_secondary_data)
+
+summary(model_mlr_v2)
+
+```
+
+Adjusted R-sequared is  0.1347, so only 13.5% of the variance in the data could be explained using the MLR model. It's same as the first model we ran, before including secondary data. So we cannot certainly say that temperature, Drinkers, and Income has no important role in terms of beverage sales.
+
+```{r}
+plot(fitted(model_mlr_v2), res, col="blue", xlab = "Fitted", ylab = "Residual", main= "Residual vs Fitted")
+abline(0,0)
+```
+
+#### Random forest
+
+Training a Random Forest Model
+
+
+```{r}
+#library(randomForest)
+set.seed(42)
+rf_v2 <-randomForest(Sales~., data=bev_secondary_data, ntree=500, importance=TRUE) 
+
+print(rf_v2)
+```
+
+
+57.87% of the variance in Sales can be explained using the new random forest model, definitely better than the MLR and the first RF mode. Lets look at the feature importance to understand the factors affecting sales.
+
+```{r}
+importance(rf_v2)
+varImpPlot(rf_v2,pch=18, col="red",cex=1)
+
+```
+
+
+
+
+#### K-Prototype 
+
+```{r}
+beverage_for_kptt_v2 <- bev_secondary_data
+str(beverage_for_kptt_v2)
+```
+
+```{r}
+#coerce variables to suitable class
+beverage_for_kptt_v2$Location <- as.factor(beverage_for_kptt_v2$Location)
+beverage_for_kptt_v2$Month <- as.factor(beverage_for_kptt_v2$Month)
+beverage_for_kptt_v2$Type <- as.factor(beverage_for_kptt_v2$Type)
+beverage_for_kptt_v2$Category <- as.factor(beverage_for_kptt_v2$Category)
+beverage_for_kptt_v2$Source <- as.factor(beverage_for_kptt_v2$Source)
+```
+```{r}
+beverage_for_kptt_v2 <- beverage_for_kptt_v2[,-12]
+```
+
+```{r}
+
+beverage_for_kptt_v2$Income <- scale(beverage_for_kptt_v2$Income)
+
+beverage_for_kptt_v2$Temperature <- scale(beverage_for_kptt_v2$Temperature)
+
+beverage_for_kptt_v2$Population <- scale(beverage_for_kptt_v2$Population)
+
+beverage_for_kptt_v2$Drinkers <- scale(beverage_for_kptt_v2$Drinkers)
+#beverage_for_kptt_v2
+# bev_summ_nooutlier
+# beverage_for_kptt_v2 %>%
+#     mutate_if(is.numeric, scale)
+```
+
+```{r}
+wss_v2<-vector()
+for (i in 2:15){ wss_v2[i] <- sum(kproto(beverage_for_kptt_v2, i)$withinss)}
+par(mfrow=c(1,1))
+plot(1:15, wss_v2, type="b", xlab="Number of Clusters",
+     ylab="Within groups sum of squares",
+     main="Assessing the Optimal Number of Clusters with the Elbow Method",
+     pch=20, cex=2)
+```
+Here we see that 3 clusters it a better partitioning. But let's use 4 clusters to see if there are any significant difference of partitioning.
+
+```{r}
+# apply k-prototyps
+kpres_v2 <- kproto(beverage_for_kptt_v2, 3)
+#kpres_v2
+summary(kpres_v2)
+```
+
+
+\newpage
+
+
+# References
+
+Project:
+
+https://nycdatascience.com/blog/student-works/liquor-retail-analytics/
+
+https://www.kaggle.com/ryanholbrook/exercise-trend
+
+https://rpubs.com/dlarson13/Iowa_Liquor_EDA
+
+https://towardsdatascience.com/the-k-prototype-as-clustering-algorithm-for-mixed-data-type-categorical-and-numerical-fe7c50538ebb
+
+Secondary data: 
+
+population
+
+https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710013401
+
+Temperature
+
+https://weatherspark.com/y/29672/Average-Weather-in-St.-John's-Canada-Year-Round#Figures-Temperature
+
+Heavy drinking number
+
+https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1310009611&pickMembers%5B0%5D=1.11&pickMembers%5B1%5D=3.1&cubeTimeFrame.startYear=2019&cubeTimeFrame.endYear=2020&referencePeriods=20190101%2C20200101
+
+Median after-tax income, Canada and provinces, 2016 to 2020
+
+https://www150.statcan.gc.ca/n1/daily-quotidien/220323/t002a-eng.htm 
+
+Others:
+
+https://www.anbl.com/medias/CALJ-Product-Identificatio-Standards.pdf
+
+https://towardsdatascience.com/the-k-prototype-as-clustering-algorithm-for-mixed-data-type-categorical-and-numerical-fe7c50538ebb
+
+https://www.kaggle.com/code/rahultej/k-prototypes-correlation-randomforest/notebook
+http://www.sirc.org/publik/drinking6.html
+
+https://www150.statcan.gc.ca/n1/pub/11-627-m/11-627-m2021034-eng.htm
+
+https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2785803
+
+https://nycdatascience.com/blog/student-works/liquor-retail-analytics/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
